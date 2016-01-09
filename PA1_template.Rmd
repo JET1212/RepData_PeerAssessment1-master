@@ -1,25 +1,238 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "Reproducible Research Assignment 1"
+author: "JET1212"
+date: "January 9, 2016"
+output: html_document
 ---
-
-
 ## Loading and preprocessing the data
 
+Show any code that is needed to:
+
+  Load the data (i.e. read.csv())
+  Process/transform the data (if necessary) into a format suitable for your analysis
+
+```{r}
+packs <- c("plyr", "lattice", "data.table", "httr", "ggplot2")
+
+new.packs <- packs[!(packs %in% installed.packages()[, "Package"])]
+if (length(new.packs)) {
+    install.packages(new.packs, dependencies = TRUE)
+  sapply(packs, require, character.only = TRUE)
+}
+
+directory <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+
+zip <- paste(getwd(), "/activity.zip", sep = "")
+if(!file.exists(zip)){
+    download.file(directory, zip, method="curl", mode="wb")
+}
+archive <- paste(getwd(), "/activity.csv", sep = "")
+if(!file.exists(archive)){
+    unzip(zip, list = FALSE, overwrite = FALSE)
+}
+
+activity <- read.table(file = archive, header = TRUE, sep = ",")
+```
+
+##What is the mean total number of steps taken per day?
+
+For this part of the assignment, you can ignore the missing values in the dataset.
+
+Calculate the total number of steps taken per day
+If you do not understand the difference between a histogram and a barplot, research the difference between them. Make a histogram of the total number of steps taken each day
+Calculate and report the mean and median of the total number of steps taken per day
+
+```{r}
+activity$dateAndTime <- as.POSIXct(
+	with(activity, 
+	paste(date, paste(interval %/% 100, interval %% 100, sep=":"))),
+	format="%Y-%m-%d %H:%M",
+	tz=""
+	)
+
+stepsPerDay <- setNames(
+	aggregate(steps~as.Date(date), 
+	activity, sum, na.rm = TRUE), 
+	c("date","steps")
+	)
+
+xaxis <- seq(1, nrow(stepsPerDay), by = 6)
+
+scale <- list(
+	x = list(rot = 45, cex = 1.0, 
+	labels = format(stepsPerDay$date, "%d-%b-%Y")[xaxis], at = xaxis)
+	)
+
+##Uncomment the next line to save the chart as an image file.
+##png("StepsPerDay1.png", width=640, height=480)
+
+plot(
+	steps ~ date, 
+	type="l", 
+	data = stepsPerDay, 
+	main = "Steps Per Day", 
+	ylab = "Steps", 
+	xlab = "Date"
+	)
+
+##Uncomment the next line to save the chart as an image file.
+##dev.off()
+
+print(paste("Mean:", mean(stepsPerDay$steps)))
+print(paste("Median:", median(stepsPerDay$steps)))
+```
+
+##What is the average daily activity pattern?
+
+Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r}
+timeSeries <- aggregate(steps ~ interval, data = activity, FUN = mean)
+
+##Uncomment the next line to save the chart as an image file.
+##png("Average_Number_of_Steps_Taken_Per_Day.png", width=640, height=480)
+
+plot(
+	timeSeries, 
+	type = "l", 
+	axes = F, 
+	xlab = "Time of Day",
+	ylab = "Average Number of Steps Across All Days", 
+	main = "Average Number of Steps Taken Per Time of Day", 
+	col = "blue"
+	)
+
+axis(
+	1,
+	at=c(seq(0,2400,100),835), 
+	label = paste(c(seq(0,24,1),8),
+	c(rep(":00",25),":40"),sep=""), 
+	pos = 0
+	)
+axis(
+	2, 
+	at=c(seq(0,210,30),206.2), 
+	label = c(seq(0,210,30),206.2), 
+	pos = 0
+	)
+maximum <- which.max(timeSeries$steps)
+segments(832, 0, 832, 206.2, col = "red", lty = "dashed")
+text(
+	835,
+	200, 
+	"Maximum average number of steps: (832,206.2)", 
+	col = "black", adj = c(-.1, -.1)
+	)
+segments(0, 206.2, 832, 206.2, col = "red", lty = "dashed")
+timeSeries [maximum, ]
+
+##Uncomment the next line to save the chart as an image file.
+##dev.off()
+
+print(paste(835, " = 8.667 hours, reached at 8:40 am"))
+```
 
 
-## What is mean total number of steps taken per day?
+##Imputing missing values
+
+Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
+
+Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+Create a new dataset that is equal to the original dataset but with the missing data filled in.
+Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+```{r}
+paste("Number of missing observations: ", sum(is.na(activity$steps)))
+
+## Missing values are replaced with the mean.
+
+newDate <- activity
+newDate[is.na(activity$steps), ]$steps <- mean(activity$steps)
+
+newDate$dateAndTime <- as.POSIXct(
+	with(newDate, paste(date, paste(interval %/% 100, interval %% 100, sep=":"))),
+    	format="%Y-%m-%d %H:%M",tz="")
+
+stepsPerDay2 <- setNames(
+	aggregate(steps~as.Date(date), newDate, sum, na.rm = TRUE), 
+	c("date","steps")
+	)
+
+xaxis <- seq(1, nrow(stepsPerDay2), by = 6)
+
+scale2 <- list(
+	x = list(rot = 45, 
+	cex = 1.0, 
+	labels = format(stepsPerDay2$date, "%d-%b-%Y")[xaxis], 
+	at = xaxis)
+	)
+
+##Uncomment the next line to save the chart as an image file.
+##png("StepsPerDay2.png", width=640, height=480)
+
+plot(
+	steps ~ date,
+	type="l", 
+	data = stepsPerDay2, 
+	main = "Number of Steps Per Day", 
+	ylab = "Number of Steps", 
+	xlab = "Date"
+	)
+
+##Uncomment the next line to save the chart as an image file.
+##dev.off()
+
+print(paste("The mean:", mean(stepsPerDay2$steps)))
+print(paste("The median:", median(stepsPerDay2$steps)))
+
+print(paste("The means difference:", mean(stepsPerDay2$steps)-mean(stepsPerDay$steps)))
+print(paste("The medians difference:", median(stepsPerDay2$steps)-median(stepsPerDay$steps)))
+```
+
+##Are there differences in activity patterns between weekdays and weekends?
+
+For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
+
+Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
+Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+
+```{r}
+library(ggplot2)
+str(newDate)
+newDate$date <- as.Date(newDate$date, "%Y-%m-%d")
+newDate$day <- weekdays(newDate$date)
+newDate$weekday <- c("Weekday")
+for (i in 1:nrow(newDate)){
+  if (newDate$day[i] == "Saturday" || newDate$day[i] == "Sunday"){
+    newDate$weekday[i] <- "Weekend"
+  }
+}
+newDate$weekday <- as.factor(newDate$weekday)
+weekend <- aggregate(steps ~ interval+weekday, newDate, mean)
+
+##Uncomment the next line to save the chart as an image file.
+##png("Steps_Means_on_Weekdays_Versus_Weekends.png", width=640, height=480)
+
+print(
+    qplot(
+	    interval, 
+	    steps, 
+	    data=weekend, 
+	    geom=c("line"), 
+	    xlab="Intervals of 5 Minutes", 
+	    ylab="Steps Means", 
+	    main="") 
+	    + facet_wrap(~ weekday, ncol=1) 
+	    + geom_smooth(method="loess"
+	    )
+    )
+
+##Uncomment the next line to save the chart as an image file.
+##dev.off()
 
 
-
-## What is the average daily activity pattern?
-
+```
 
 
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
