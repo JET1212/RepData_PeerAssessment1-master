@@ -1,6 +1,6 @@
 # Reproducible Research Assignment 1
 JET1212  
-January 9, 2016  
+February 9, 2016  
 ## Loading and preprocessing the data
 
 Show any code that is needed to:
@@ -76,25 +76,17 @@ scale <- list(
 	labels = format(stepsPerDay$date, "%d-%b-%Y")[xaxis], at = xaxis)
 	)
 
-##Uncomment the next line to save the chart as an image file.
-##png("StepsPerDay1.png", width=640, height=480)
-
-plot(
-	steps ~ date, 
-	type="l", 
-	data = stepsPerDay, 
-	main = "Steps Per Day", 
-	ylab = "Steps", 
-	xlab = "Date"
-	)
+hist(
+    stepsPerDay$steps, 
+      breaks=50, 
+      main="Histogram of Steps Per Day",
+      xlab = "Steps Per Day"
+      )
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)\
 
 ```r
-##Uncomment the next line to save the chart as an image file.
-##dev.off()
-
 print(paste("Mean:", mean(stepsPerDay$steps)))
 ```
 
@@ -118,9 +110,6 @@ Which 5-minute interval, on average across all the days in the dataset, contains
 
 ```r
 timeSeries <- aggregate(steps ~ interval, data = activity, FUN = mean)
-
-##Uncomment the next line to save the chart as an image file.
-##png("Average_Number_of_Steps_Taken_Per_Day.png", width=640, height=480)
 
 plot(
 	timeSeries, 
@@ -168,9 +157,6 @@ timeSeries [maximum, ]
 ```
 
 ```r
-##Uncomment the next line to save the chart as an image file.
-##dev.off()
-
 print(paste(835, " = 8.667 hours, reached at 8:40 am"))
 ```
 
@@ -221,25 +207,18 @@ scale2 <- list(
 	at = xaxis)
 	)
 
-##Uncomment the next line to save the chart as an image file.
-##png("StepsPerDay2.png", width=640, height=480)
 
-plot(
-	steps ~ date,
-	type="l", 
-	data = stepsPerDay2, 
-	main = "Number of Steps Per Day", 
-	ylab = "Number of Steps", 
-	xlab = "Date"
-	)
+hist(
+    stepsPerDay2$steps, 
+      breaks=50, 
+      main="Histogram of Steps Per Day",
+      xlab = "Steps Per Day"
+      )
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)\
 
 ```r
-##Uncomment the next line to save the chart as an image file.
-##dev.off()
-
 print(paste("The mean:", mean(stepsPerDay2$steps)))
 ```
 
@@ -311,8 +290,6 @@ for (i in 1:nrow(newDate)){
 newDate$weekday <- as.factor(newDate$weekday)
 weekend <- aggregate(steps ~ interval+weekday, newDate, mean)
 
-##Uncomment the next line to save the chart as an image file.
-##png("Steps_Means_on_Weekdays_Versus_Weekends.png", width=640, height=480)
 
 print(
     qplot(
@@ -330,10 +307,5 @@ print(
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)\
-
-```r
-##Uncomment the next line to save the chart as an image file.
-##dev.off()
-```
 
 
