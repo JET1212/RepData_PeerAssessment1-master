@@ -1,5 +1,3 @@
 # RepData_PeerAssessment1-master
 
-Corrections. Stupid R Studio wasn't rendering the .md file.
-
-SEE THE .MD FILE.
+Just click on the .md file. Thank you.
