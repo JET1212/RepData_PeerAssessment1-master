@@ -1,6 +1,6 @@
 # Reproducible Research Assignment 1
 JET1212  
-February 9, 2016  
+February 3, 2016  
 ## Loading and preprocessing the data
 
 Show any code that is needed to:
