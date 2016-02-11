@@ -139,7 +139,7 @@ paste("Number of missing observations: ", sum(is.na(activity$steps)))
 ## Missing values are replaced with the mean.
 
 newDate <- activity
-newDate[is.na(activity$steps), ]$steps <- mean(activity$steps)
+newDate[is.na(activity$steps), ]$steps <- mean(activity$steps, na.rm=TRUE)
 
 newDate$dateAndTime <- as.POSIXct(
 	with(newDate, paste(date, paste(interval %/% 100, interval %% 100, sep=":"))),

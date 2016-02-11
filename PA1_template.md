@@ -187,7 +187,7 @@ paste("Number of missing observations: ", sum(is.na(activity$steps)))
 ## Missing values are replaced with the mean.
 
 newDate <- activity
-newDate[is.na(activity$steps), ]$steps <- mean(activity$steps)
+newDate[is.na(activity$steps), ]$steps <- mean(activity$steps, na.rm=TRUE)
 
 newDate$dateAndTime <- as.POSIXct(
 	with(newDate, paste(date, paste(interval %/% 100, interval %% 100, sep=":"))),
@@ -231,7 +231,7 @@ print(paste("The median:", median(stepsPerDay2$steps)))
 ```
 
 ```
-## [1] "The median: 10765"
+## [1] "The median: 10766.1886792453"
 ```
 
 ```r
@@ -247,7 +247,7 @@ print(paste("The medians difference:", median(stepsPerDay2$steps)-median(stepsPe
 ```
 
 ```
-## [1] "The medians difference: 0"
+## [1] "The medians difference: 1.1886792452824"
 ```
 
 ##Are there differences in activity patterns between weekdays and weekends?
@@ -272,7 +272,7 @@ str(newDate)
 
 ```
 ## 'data.frame':	17568 obs. of  4 variables:
-##  $ steps      : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ steps      : num  37.4 37.4 37.4 37.4 37.4 ...
 ##  $ date       : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ interval   : int  0 5 10 15 20 25 30 35 40 45 ...
 ##  $ dateAndTime: POSIXct, format: "2012-10-01 00:00:00" "2012-10-01 00:05:00" ...
